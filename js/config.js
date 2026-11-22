@@ -1,4 +1,4 @@
 const SUPABASE_URL = "https://jpvsjygohgnzgfqoqawp.supabase.co/rest/v1/";
-const SUPABASE_ANON_KEY = "process.env.SUPABASE_KEY";
+const SUPABASE_ANON_KEY = "sb_publishable_TqYeLUD8V3bJk6CDvZGp8Q_fJds0zoB;
 
-const supabaseClient = supabase.createClient("https://jpvsjygohgnzgfqoqawp.supabase.co/rest/v1/", process.env.SUPABASE_KEY);
+const supabaseClient = supabase.createClient("https://jpvsjygohgnzgfqoqawp.supabase.co/rest/v1/", sb_publishable_TqYeLUD8V3bJk6CDvZGp8Q_fJds0zoB);
