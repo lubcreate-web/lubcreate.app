@@ -12,6 +12,7 @@
   <div id="login-section" class="min-h-screen flex items-center justify-center p-4">
     <form id="login-form" class="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-sm w-full space-y-4">
       <h1 class="text-xl font-bold text-center">Login Admin Toko</h1>
+      <div id="login-error" class="hidden bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs p-3 rounded-lg"></div>
       <div>
         <label class="block text-xs text-slate-400 mb-1">Email Admin</label>
         <input type="email" id="admin-email" required class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" />
@@ -20,7 +21,7 @@
         <label class="block text-xs text-slate-400 mb-1">Password</label>
         <input type="password" id="admin-password" required class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" />
       </div>
-      <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 py-2.5 rounded-lg text-sm font-semibold">Masuk</button>
+      <button type="submit" id="btn-login" class="w-full bg-indigo-600 hover:bg-indigo-500 py-2.5 rounded-lg text-sm font-semibold">Masuk</button>
     </form>
   </div>
 
@@ -89,7 +90,17 @@
 
   <script src="js/config.js"></script>
   <script>
+    function showLoginError(msg) {
+      const box = document.getElementById('login-error');
+      box.textContent = msg;
+      box.classList.remove('hidden');
+    }
+
     async function checkAuth() {
+      if (typeof supabaseClient === 'undefined') {
+        showLoginError('Koneksi js/config.js gagal dimuat. Periksa file js/config.js di GitHub.');
+        return;
+      }
       const { data: { session } } = await supabaseClient.auth.getSession();
       if (session) {
         document.getElementById('login-section').classList.add('hidden');
@@ -100,12 +111,36 @@
 
     document.getElementById('login-form').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const { error } = await supabaseClient.auth.signInWithPassword({
-        email: document.getElementById('admin-email').value,
-        password: document.getElementById('admin-password').value
-      });
-      if (error) return alert('Login gagal: ' + error.message);
-      checkAuth();
+      const btn = document.getElementById('btn-login');
+      document.getElementById('login-error').classList.add('hidden');
+
+      if (typeof supabaseClient === 'undefined') {
+        showLoginError('File js/config.js tidak terbaca.');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Memeriksa akun...';
+
+      try {
+        const { error } = await supabaseClient.auth.signInWithPassword({
+          email: document.getElementById('admin-email').value.trim(),
+          password: document.getElementById('admin-password').value
+        });
+
+        if (error) {
+          showLoginError('Login gagal: ' + error.message);
+          btn.disabled = false;
+          btn.textContent = 'Masuk';
+          return;
+        }
+
+        await checkAuth();
+      } catch (err) {
+        showLoginError('Terjadi error: ' + err.message);
+        btn.disabled = false;
+        btn.textContent = 'Masuk';
+      }
     });
 
     async function logout() {
